@@ -1,0 +1,4 @@
+name,weight,type
+Price,0.4,min
+Power,0.35,max
+Consumption,0.25,min

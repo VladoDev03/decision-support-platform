@@ -1,10 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8">
+  <title>Decision Making Platform</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
+  <h1>Decision Support Systems</h1>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('borda-nanson')">Borda / Nanson</button>
+    <button class="tab-btn" onclick="switchTab('topsis')">TOPSIS</button>
+    <button class="tab-btn" onclick="switchTab('electre')">ELECTRE I</button>
+    <button class="tab-btn" onclick="switchTab('cbim')">Interactive Method (CBIM)</button>
+  </div>
+
+  <div id="tab-borda-nanson" class="tab-content active">
+    <div class="grid">
+      <div class="card">
+        <h2>Expert Votes (CSV)</h2>
+        <div class="file-drop-zone" id="bn-drop-zone">
+          <label class="btn btn-secondary file-label">Choose File <input type="file" id="bn-file-input" accept=".csv" class="hidden"></label>
+          <div id="bn-file-name" class="file-name-display hidden"></div>
+        </div>
+        <div id="bn-preview" class="preview-container hidden"></div>
+        <p id="error-msg" class="error-text hidden"></p>
+        <button class="btn btn-primary" id="calculate-btn">Calculate</button>
+      </div>
+      <div class="card">
+        <h2>Results</h2>
+        <div id="results-placeholder" class="placeholder-text">No data processed.</div>
+        <div id="results-section" class="hidden">
+          <div id="paradox-banner" class="paradox-banner hidden">Voting Paradox Detected!</div>
+          <h3 class="section-sub-title">Borda Count</h3>
+          <div id="borda-winner" class="winner-box"></div>
+          <table class="scores-table"><thead><tr><th>Alternative</th><th>Score</th></tr></thead><tbody id="borda-scores"></tbody></table>
+          <hr class="divider">
+          <h3 class="section-sub-title">Nanson Procedure</h3>
+          <div id="nanson-winner" class="winner-box"></div>
+          <div id="nanson-rounds"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-topsis" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h2>TOPSIS Analysis</h2>
+        <div class="file-upload-group">
+          <label class="form-label">Criteria CSV:</label>
+          <div class="file-drop-zone compact" id="topsis-crit-drop-zone">
+            <label class="btn btn-secondary file-label">Choose File <input type="file" id="topsis-crit-file-input" accept=".csv" class="hidden"></label>
+            <div id="topsis-crit-file-name" class="file-name-display hidden"></div>
+          </div>
+          <div id="topsis-crit-preview" class="preview-container hidden"></div>
+        </div>
+        <div class="file-upload-group mt-1">
+          <label class="form-label">Alternatives CSV:</label>
+          <div class="file-drop-zone compact" id="topsis-alt-drop-zone">
+            <label class="btn btn-secondary file-label">Choose File <input type="file" id="topsis-alt-file-input" accept=".csv" class="hidden"></label>
+            <div id="topsis-alt-file-name" class="file-name-display hidden"></div>
+          </div>
+          <div id="topsis-alt-preview" class="preview-container hidden"></div>
+        </div>
+        <p id="topsis-error-msg" class="error-text hidden"></p>
+        <button class="btn btn-primary" id="topsis-calculate-btn">Calculate TOPSIS</button>
+      </div>
+      <div class="card">
+        <h2>TOPSIS Results</h2>
+        <div id="topsis-placeholder" class="placeholder-text">Upload files and calculate.</div>
+        <div id="topsis-results-section" class="hidden">
+          <div id="topsis-winner-box" class="winner-box normal"></div>
+          <table class="topsis-table"><thead><tr><th>Rank</th><th>Alternative</th><th>Score</th><th>d(A+)</th><th>d(A-)</th></tr></thead><tbody id="topsis-scores"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-electre" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h2>ELECTRE I Analysis</h2>
+        <div class="threshold-group">
+          <div><label class="form-label">c* (Concordance):</label><input type="number" id="electre-c" value="0.60" step="0.05"></div>
+          <div><label class="form-label">d* (Discordance):</label><input type="number" id="electre-d" value="0.35" step="0.05"></div>
+        </div>
+        <div class="file-upload-group">
+          <label class="form-label">Criteria CSV:</label>
+          <div class="file-drop-zone compact" id="electre-crit-drop-zone">
+            <label class="btn btn-secondary file-label">Choose File <input type="file" id="electre-crit-file-input" accept=".csv" class="hidden"></label>
+            <div id="electre-crit-file-name" class="file-name-display hidden"></div>
+          </div>
+          <div id="electre-crit-preview" class="preview-container hidden"></div>
+        </div>
+        <div class="file-upload-group mt-1">
+          <label class="form-label">Alternatives CSV:</label>
+          <div class="file-drop-zone compact" id="electre-alt-drop-zone">
+            <label class="btn btn-secondary file-label">Choose File <input type="file" id="electre-alt-file-input" accept=".csv" class="hidden"></label>
+            <div id="electre-alt-file-name" class="file-name-display hidden"></div>
+          </div>
+          <div id="electre-alt-preview" class="preview-container hidden"></div>
+        </div>
+        <p id="electre-error-msg" class="error-text hidden"></p>
+        <button class="btn btn-primary" id="electre-calculate-btn">Calculate ELECTRE</button>
+      </div>
+      <div class="card">
+        <h2>ELECTRE I Results</h2>
+        <div id="electre-placeholder" class="placeholder-text">Upload files and calculate.</div>
+        <div id="electre-results-section" class="hidden">
+          <div id="electre-kernel-box" class="winner-box electre"></div>
+          <h3 class="section-sub-title mt-1">Dominance Relations:</h3>
+          <div id="electre-relations" class="relations-list"></div>
+          <h3 class="section-sub-title mt-lg">Concordance Matrix (C):</h3>
+          <table class="matrix-table"><thead id="c-matrix-head"></thead><tbody id="c-matrix-body"></tbody></table>
+          <h3 class="section-sub-title mt-lg">Discordance Matrix (D):</h3>
+          <table class="matrix-table"><thead id="d-matrix-head"></thead><tbody id="d-matrix-body"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-cbim" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h2>Interactive Method (CBIM)</h2>
+        <div class="file-upload-group">
+          <label class="form-label">Criteria CSV:</label>
+          <div class="file-drop-zone compact" id="cbim-crit-drop-zone">
+            <label class="btn btn-secondary file-label">Choose File <input type="file" id="cbim-crit-file-input" accept=".csv" class="hidden"></label>
+            <div id="cbim-crit-file-name" class="file-name-display hidden"></div>
+          </div>
+          <div id="cbim-crit-preview" class="preview-container hidden"></div>
+        </div>
+        <div class="file-upload-group mt-1">
+          <label class="form-label">Alternatives CSV:</label>
+          <div class="file-drop-zone compact" id="cbim-alt-drop-zone">
+            <label class="btn btn-secondary file-label">Choose File <input type="file" id="cbim-alt-file-input" accept=".csv" class="hidden"></label>
+            <div id="cbim-alt-file-name" class="file-name-display hidden"></div>
+          </div>
+          <div id="cbim-alt-preview" class="preview-container hidden"></div>
+        </div>
+        <p id="cbim-file-error" class="error-text hidden"></p>
+        <div id="cbim-settings-section" class="hidden">
+          <div class="form-group mt-1">
+            <label class="form-label">Base Alternative (A_h):</label>
+            <select id="cbim-base-select" class="form-select"></select>
+          </div>
+          <h3 class="section-sub-title">Criteria Bounds:</h3>
+          <div id="cbim-preferences-container"></div>
+          <div class="form-group mt-1">
+            <label class="form-label">Return Count (l):</label>
+            <input type="number" id="cbim-l-count" value="3" min="1" class="form-select inline-input">
+          </div>
+        </div>
+        <button class="btn btn-primary" id="cbim-calculate-btn">Search Alternatives</button>
+      </div>
+      <div class="card">
+        <h2>Settlement Set (M_1)</h2>
+        <div id="cbim-placeholder" class="placeholder-text">Load data configuration and search.</div>
+        <div id="cbim-results-section" class="hidden">
+          <div id="cbim-winner-box" class="winner-box normal"></div>
+          <table class="scores-table"><thead><tr><th>Alternative</th><th>Distance</th><th>Metrics</th></tr></thead><tbody id="cbim-table-body"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
